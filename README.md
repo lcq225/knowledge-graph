@@ -82,6 +82,6 @@ Contributions are welcome! Please open an issue or submit a pull request.
 
 ## Links
 
-- GitHub: https://github.com/lcq225/ontology
+- GitHub: https://github.com/lcq225/copaw-ontology
 - PyPI: https://pypi.org/project/copaw-ontology/
-- Issues: https://github.com/lcq225/ontology/issues
+- Issues: https://github.com/lcq225/copaw-ontology/issues
