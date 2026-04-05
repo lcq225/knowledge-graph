@@ -1,0 +1,708 @@
+# Ontology Schema v2.0
+# 定义实体类型、属性约束、关系约束
+# 日期：2026-03-29
+
+version: 2.0
+updated: 2026-03-29
+description: "Ontology 本体论 Schema - 约束验证基础"
+
+# ==================== 实体类型定义 ====================
+
+types:
+  # ---------- 人物类 ----------
+  Person:
+    description: "人物（用户、Agent 等）"
+    category: "agent"
+    required:
+      - name
+    optional:
+      - email
+      - phone
+      - notes
+      - channel
+      - user_id
+      - avatar_url
+    enums:
+      channel: [console, wecom, dingtalk, discord, slack]
+    validations:
+      - "name must be non-empty string"
+      - "email must be valid email format if exists"
+  
+  Agent:
+    description: "AI Agent"
+    category: "agent"
+    parent: Person
+    required:
+      - name
+      - agent_id
+    optional:
+      - capabilities
+      - status
+      - workspace
+    enums:
+      status: [active, inactive, maintenance]
+    validations:
+      - "agent_id must be unique"
+  
+  # ---------- 组织类 ----------
+  Organization:
+    description: "组织（公司、团队等）"
+    category: "organization"
+    required:
+      - name
+    optional:
+      - type
+      - members
+      - location
+      - industry
+      - website
+    enums:
+      type: [company, team, department, government, nonprofit]
+  
+  Company:
+    description: "公司"
+    category: "organization"
+    parent: Organization
+    optional:
+      - registered_address
+      - employees_count
+      - revenue
+      - founded_date
+  
+  # ---------- 项目类 ----------
+  Project:
+    description: "项目"
+    category: "work"
+    required:
+      - name
+    optional:
+      - status
+      - goals
+      - owner
+      - start_date
+      - end_date
+      - budget
+      - description
+    enums:
+      status: [planning, active, on_hold, completed, cancelled]
+    validations:
+      - "end_date >= start_date if both exist"
+      - "owner must be Person or Agent type"
+  
+  # ---------- 任务类 ----------
+  Task:
+    description: "任务"
+    category: "work"
+    required:
+      - title
+      - status
+    optional:
+      - description
+      - due
+      - priority
+      - assignee
+      - blockers
+      - project
+      - tags
+    enums:
+      status: [open, in_progress, blocked, done, cancelled]
+      priority: [low, medium, high, urgent]
+    validations:
+      - "due must be valid date if exists"
+      - "assignee must be Person or Agent type if exists"
+      - "project must be Project type if exists"
+  
+  # ---------- 目标类 ----------
+  Goal:
+    description: "目标"
+    category: "work"
+    required:
+      - description
+    optional:
+      - target_date
+      - metrics
+      - status
+      - owner
+    enums:
+      status: [planned, in_progress, achieved, abandoned]
+  
+  # ---------- 事件类 ----------
+  Event:
+    description: "事件"
+    category: "time"
+    required:
+      - title
+      - start
+    optional:
+      - end
+      - location
+      - attendees
+      - recurrence
+      - description
+    validations:
+      - "end >= start if end exists"
+      - "start must be valid datetime"
+  
+  # ---------- 地点类 ----------
+  Location:
+    description: "地点"
+    category: "place"
+    required:
+      - name
+    optional:
+      - address
+      - coordinates
+      - type
+    enums:
+      type: [office, home, meeting_room, outdoor, virtual]
+  
+  # ---------- 信息类 ----------
+  Document:
+    description: "文档"
+    category: "information"
+    required:
+      - title
+    optional:
+      - path
+      - url
+      - summary
+      - type
+      - created_date
+      - modified_date
+    enums:
+      type: [report, proposal, manual, note, article, specification]
+  
+  Message:
+    description: "消息"
+    category: "information"
+    required:
+      - content
+      - sender
+    optional:
+      - recipients
+      - thread
+      - timestamp
+      - channel
+  
+  Note:
+    description: "笔记"
+    category: "information"
+    required:
+      - content
+    optional:
+      - tags
+      - refs
+      - created_date
+      - author
+  
+  # ---------- 技术类 ----------
+  Technology:
+    description: "技术/技能"
+    category: "technology"
+    required:
+      - name
+    optional:
+      - version
+      - category
+      - docs_url
+      - description
+    enums:
+      category: [programming_language, framework, library, tool, platform, skill]
+  
+  Skill:
+    description: "技能（CoPaw 技能）"
+    category: "technology"
+    parent: Technology
+    required:
+      - name
+      - skill_id
+    optional:
+      - version
+      - description
+      - triggers
+      - dependencies
+  
+  # ---------- 知识类 ----------
+  Knowledge:
+    description: "知识/经验"
+    category: "knowledge"
+    required:
+      - content
+    optional:
+      - category
+      - importance
+      - tags
+      - source
+      - confidence
+    enums:
+      category: [fact, experience, lesson, decision, milestone, preference]
+    validations:
+      - "importance must be between 0.0 and 1.0 if exists"
+      - "confidence must be between 0.0 and 1.0 if exists"
+  
+  Experience:
+    description: "经验教训"
+    category: "knowledge"
+    parent: Knowledge
+    required:
+      - content
+      - outcome
+    optional:
+      - action
+      - context
+      - insight
+    enums:
+      outcome: [positive, negative, neutral]
+  
+  Decision:
+    description: "决策"
+    category: "knowledge"
+    parent: Knowledge
+    required:
+      - content
+      - outcome
+    optional:
+      - context
+      - alternatives
+      - rationale
+      - stakeholders
+  
+  # ---------- 资源类 ----------
+  Account:
+    description: "账户"
+    category: "resource"
+    required:
+      - service
+      - username
+    optional:
+      - credential_ref
+      - email
+      - created_date
+    validations:
+      - "password MUST NOT be stored directly (use credential_ref)"
+      - "credential_ref should point to .copaw.secret/*.json"
+    notes:
+      - "敏感凭证应存储在 .copaw.secret/ 目录"
+      - "Ontology 中只存 credential_ref 引用"
+      - "示例：credential_ref = 'github.json'"
+  
+  Device:
+    description: "设备"
+    category: "resource"
+    required:
+      - name
+      - type
+    optional:
+      - identifiers
+      - os
+      - status
+    enums:
+      type: [computer, phone, tablet, server, iot]
+      status: [active, inactive, maintenance, retired]
+  
+  # ---------- 元类 ----------
+  Action:
+    description: "动作/操作"
+    category: "meta"
+    required:
+      - type
+      - timestamp
+    optional:
+      - target
+      - actor
+      - outcome
+      - duration
+    enums:
+      outcome: [success, failure, partial]
+  
+  Policy:
+    description: "策略/规则"
+    category: "meta"
+    required:
+      - scope
+      - rule
+    optional:
+      - enforcement
+      - exceptions
+      - effective_date
+  
+  Commitment:
+    description: "承诺（跨技能通信）"
+    category: "meta"
+    required:
+      - description
+      - due
+      - status
+    optional:
+      - source_skill
+      - source_message
+      - priority
+    enums:
+      status: [pending, accepted, in_progress, completed, cancelled]
+
+
+# ==================== 关系定义 ====================
+
+relations:
+  # ---------- 人物关系 ----------
+  works_at:
+    description: "工作于"
+    category: "organization"
+    from_types: [Person, Agent]
+    to_types: [Organization, Company]
+    cardinality: many_to_one
+    inverse: has_member
+  
+  has_member:
+    description: "拥有成员"
+    category: "organization"
+    from_types: [Organization, Company]
+    to_types: [Person, Agent]
+    cardinality: one_to_many
+    inverse: works_at
+  
+  knows:
+    description: "认识"
+    category: "social"
+    from_types: [Person, Agent]
+    to_types: [Person, Agent]
+    cardinality: many_to_many
+    symmetric: true
+  
+  colleague_of:
+    description: "同事"
+    category: "social"
+    from_types: [Person, Agent]
+    to_types: [Person, Agent]
+    cardinality: many_to_many
+    symmetric: true
+    inference_rule: "Two persons working at same organization"
+  
+  # ---------- 工作关系 ----------
+  owns:
+    description: "拥有/负责"
+    category: "work"
+    from_types: [Person, Agent]
+    to_types: [Project, Task, Goal]
+    cardinality: one_to_many
+    inverse: has_owner
+  
+  has_owner:
+    description: "拥有者"
+    category: "work"
+    from_types: [Project, Task, Goal]
+    to_types: [Person, Agent]
+    cardinality: many_to_one
+    inverse: owns
+  
+  participates_in:
+    description: "参与"
+    category: "work"
+    from_types: [Person, Agent]
+    to_types: [Project, Task]
+    cardinality: many_to_many
+    inverse: has_participant
+  
+  has_task:
+    description: "包含任务"
+    category: "work"
+    from_types: [Project, Goal]
+    to_types: [Task]
+    cardinality: one_to_many
+    inverse: belongs_to
+  
+  belongs_to:
+    description: "属于"
+    category: "work"
+    from_types: [Task]
+    to_types: [Project, Goal]
+    cardinality: many_to_one
+    inverse: has_task
+  
+  blocks:
+    description: "阻塞"
+    category: "work"
+    from_types: [Task]
+    to_types: [Task]
+    cardinality: many_to_many
+    acyclic: true  # 禁止循环依赖
+  
+  depends_on:
+    description: "依赖于"
+    category: "work"
+    from_types: [Project, Task, Goal]
+    to_types: [Project, Task, Goal, Technology]
+    cardinality: many_to_many
+    acyclic: true  # 禁止循环依赖
+  
+  # ---------- 技术关系 ----------
+  uses:
+    description: "使用"
+    category: "technology"
+    from_types: [Person, Agent, Project, Task]
+    to_types: [Technology, Skill]
+    cardinality: many_to_many
+  
+  masters:
+    description: "掌握"
+    category: "technology"
+    from_types: [Person, Agent]
+    to_types: [Technology, Skill]
+    cardinality: many_to_many
+    inference_rule: "uses + high proficiency"
+  
+  provides:
+    description: "提供（技能提供服务）"
+    category: "technology"
+    from_types: [Skill]
+    to_types: [Person, Agent, Project]
+    cardinality: one_to_many
+  
+  # ---------- 知识关系 ----------
+  learned_from:
+    description: "学自"
+    category: "knowledge"
+    from_types: [Knowledge, Experience]
+    to_types: [Event, Action, Experience]
+    cardinality: many_to_one
+  
+  relates_to:
+    description: "关联到"
+    category: "knowledge"
+    from_types: [Entity]  # 所有实体类型
+    to_types: [Entity]
+    cardinality: many_to_many
+    symmetric: true
+  
+  supersedes:
+    description: "取代"
+    category: "knowledge"
+    from_types: [Decision, Knowledge]
+    to_types: [Decision, Knowledge]
+    cardinality: one_to_one
+    acyclic: true
+  
+  derived_from:
+    description: "源自"
+    category: "knowledge"
+    from_types: [Knowledge, Document, Note]
+    to_types: [Knowledge, Document, Note, Event]
+    cardinality: many_to_one
+  
+  # ---------- 时间关系 ----------
+  occurs_at:
+    description: "发生于"
+    category: "time"
+    from_types: [Event, Action]
+    to_types: [Location]
+    cardinality: many_to_one
+  
+  scheduled_for:
+    description: "计划于"
+    category: "time"
+    from_types: [Task, Event]
+    to_types: [Event]
+    cardinality: many_to_one
+  
+  # ---------- 信息关系 ----------
+  references:
+    description: "引用"
+    category: "information"
+    from_types: [Document, Note, Message]
+    to_types: [Document, Note, Message, Knowledge]
+    cardinality: many_to_many
+  
+  contains:
+    description: "包含"
+    category: "information"
+    from_types: [Document]
+    to_types: [Note, Knowledge]
+    cardinality: one_to_many
+  
+  # ---------- 资源关系 ----------
+  owns_resource:
+    description: "拥有资源"
+    category: "resource"
+    from_types: [Person, Agent, Organization]
+    to_types: [Device, Account]
+    cardinality: one_to_many
+  
+  accesses:
+    description: "访问"
+    category: "resource"
+    from_types: [Person, Agent]
+    to_types: [Device, Account, Document]
+    cardinality: many_to_many
+  
+  # ---------- 元关系 ----------
+  triggered_by:
+    description: "由...触发"
+    category: "meta"
+    from_types: [Action, Event]
+    to_types: [Action, Event, Commitment]
+    cardinality: many_to_one
+  
+  fulfills:
+    description: "履行"
+    category: "meta"
+    from_types: [Action, Task]
+    to_types: [Commitment]
+    cardinality: many_to_one
+
+
+# ==================== 禁止属性（敏感信息） ====================
+
+forbidden_properties:
+  - password
+  - secret
+  - token
+  - api_key
+  - api_secret
+  - credential
+  - credentials
+  - private_key
+  - private_key_pem
+  - access_token
+  - refresh_token
+  - auth_token
+  - session_token
+  - bearer_token
+  - client_secret
+  - database_password
+  - db_password
+  - encryption_key
+  - master_key
+  - signing_key
+
+# 注意：敏感信息应通过 credential_ref 间接引用，而非直接存储
+
+
+# ==================== 索引定义（性能优化） ====================
+
+indexes:
+  entities:
+    - name: idx_entity_type
+      columns: [type]
+    - name: idx_entity_category
+      columns: [category]
+    - name: idx_entity_created
+      columns: [created_at]
+  
+  relations:
+    - name: idx_relation_type
+      columns: [relation_type]
+    - name: idx_relation_from
+      columns: [from_id]
+    - name: idx_relation_to
+      columns: [to_id]
+  
+  full_text:
+    - name: ftx_entity_properties
+      columns: [properties]
+      type: FTS5
+
+
+# ==================== 约束规则 ====================
+
+constraints:
+  # 实体唯一性
+  entity_uniqueness:
+    description: "某些类型的实体需要唯一标识"
+    types: [Agent, Skill, Device]
+    unique_fields: [agent_id, skill_id, name]
+  
+  # 关系对称性
+  relation_symmetry:
+    description: "对称关系自动创建反向关系"
+    relations: [knows, colleague_of, relates_to]
+  
+  # 关系非对称性
+  relation_acyclicity:
+    description: "禁止循环依赖"
+    relations: [blocks, depends_on, supersedes]
+    check: acyclic
+  
+  # 基数约束
+  cardinality_constraints:
+    description: "关系基数约束"
+    rules:
+      - relation: works_at
+        max_per_from: 1  # 一个人只能在一个组织工作（主职）
+      - relation: has_owner
+        max_per_to: 10   # 一个人最多负责 10 个项目/任务
+  
+  # 存在性约束
+  existence_constraints:
+    description: "关系目标必须存在"
+    rules:
+      - relation: has_owner
+        target_must_exist: true
+      - relation: belongs_to
+        target_must_exist: true
+
+
+# ==================== 推理规则 ====================
+
+inference_rules:
+  # 传递推理
+  transitive_relations:
+    - relation: colleague_of
+      rule: "If A works_at X and B works_at X, then A colleague_of B"
+    
+    - relation: depends_on
+      rule: "If A depends_on B and B depends_on C, then A depends_on C (transitive)"
+  
+  # 逆反推理
+  inverse_relations:
+    - pair: [works_at, has_member]
+      rule: "If A works_at B, then B has_member A"
+    
+    - pair: [owns, has_owner]
+      rule: "If A owns B, then B has_owner A"
+  
+  # 隐含推理
+  implicit_relations:
+    - rule: "If A uses Technology and proficiency > 0.8, then A masters Technology"
+      trigger: uses
+      condition: "proficiency > 0.8"
+      infer: masters
+    
+    - rule: "If Task belongs_to Project, then Task depends_on Project"
+      trigger: belongs_to
+      infer: depends_on
+
+
+# ==================== 默认值 ====================
+
+defaults:
+  Task:
+    status: open
+    priority: medium
+  
+  Project:
+    status: planning
+  
+  Event:
+    recurrence: none
+  
+  Knowledge:
+    importance: 0.5
+    confidence: 0.8
+  
+  Commitment:
+    status: pending
+    priority: medium
+
+
+# ==================== 版本历史 ====================
+
+version_history:
+  - version: 2.0
+    date: 2026-03-29
+    changes:
+      - "Initial Ontology Schema for knowledge-graph v2.0"
+      - "Added 20+ entity types"
+      - "Added 30+ relation types"
+      - "Added constraint system"
+      - "Added inference rules"
+      - "Added security (forbidden properties)"

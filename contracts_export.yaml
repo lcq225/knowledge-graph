@@ -1,0 +1,64 @@
+contracts:
+- author: 老 K
+  created_at: '2026-03-29T11:33:18.825363'
+  depends_on:
+  - memorycoreclaw
+  description: 自我进化引擎 - 周期性审视、经验学习、错误改善
+  postconditions:
+  - 新知识已记录
+  - 经验教训已保存
+  - 技能效用已更新
+  preconditions:
+  - MemoryCoreClaw 已初始化
+  - 记忆数据库可访问
+  provides:
+  - 经验记录
+  - 错误学习
+  - 技能优化
+  reads:
+  - Task
+  - Project
+  - Knowledge
+  - Experience
+  - Decision
+  - Skill
+  skill_name: self_evolution
+  updated_at: '2026-03-29T11:33:18.825383'
+  version: '1.0'
+  writes:
+  - Knowledge
+  - Experience
+  - Decision
+  - Task
+  - Skill
+- author: 老 K
+  created_at: '2026-03-29T11:33:18.825387'
+  depends_on: []
+  description: 类人脑长期记忆系统 - 支持分层记忆、遗忘曲线、情境记忆
+  postconditions:
+  - 记忆已持久化
+  - 向量索引已更新
+  preconditions:
+  - SQLite 数据库可访问
+  - Embedding 模型可用
+  provides:
+  - 记忆存储
+  - 向量搜索
+  - 关系管理
+  reads:
+  - Knowledge
+  - Experience
+  - Decision
+  - Person
+  - Event
+  skill_name: memorycoreclaw
+  updated_at: '2026-03-29T11:33:18.825388'
+  version: '2.0'
+  writes:
+  - Knowledge
+  - Experience
+  - Decision
+  - Person
+  - Event
+  - Relation
+exported_at: '2026-03-29T11:33:18.825430'

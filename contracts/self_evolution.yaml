@@ -1,0 +1,82 @@
+# Self Evolution Skill Contract
+# 自我进化引擎技能契约
+
+skill_name: "self_evolution"
+version: "2.0"
+description: "自我进化引擎 - 周期性审视、经验学习、错误改善、任务固化、闭环进化"
+
+# 读取的实体类型
+reads:
+  - Task
+  - Project
+  - Knowledge
+  - Experience
+  - Decision
+  - Skill
+  - Event
+
+# 写入的实体类型
+writes:
+  - Knowledge
+  - Experience
+  - Decision
+  - Task
+  - Skill
+
+# 前置条件
+preconditions:
+  - "MemoryCoreClaw 已初始化"
+  - "记忆数据库可访问"
+  - "Ontology 验证器可用"
+
+# 后置条件
+postconditions:
+  - "新知识已记录到记忆系统"
+  - "经验教训已保存到数据库"
+  - "技能效用已更新"
+  - "错误模式已识别并记录"
+
+# 依赖的技能
+depends_on:
+  - memorycoreclaw
+  - knowledge-graph
+
+# 提供的服务
+provides:
+  - "经验记录服务"
+  - "错误学习服务"
+  - "技能优化服务"
+  - "模式识别服务"
+  - "知识沉淀服务"
+
+# 事件订阅
+subscribes_to:
+  - task_completed
+  - skill_executed
+  - error_occurred
+  - knowledge_created
+
+# 事件发布
+publishes:
+  - experience_learned
+  - decision_made
+  - skill_optimized
+
+# 权限说明
+permissions:
+  - "可以读取所有类型的知识实体"
+  - "可以写入 Knowledge/Experience/Decision 类型"
+  - "不能直接修改 Person 实体"
+  - "不能删除历史经验记录"
+
+# 元数据
+author: "老 K"
+created_at: "2026-03-29"
+updated_at: "2026-03-29"
+
+# 备注
+notes:
+  - "本技能是自我进化的核心引擎"
+  - "通过事件总线与其他技能协作"
+  - "所有写入操作都经过 Ontology 验证"
+  - "敏感信息通过 credential_ref 引用，不直接存储"
